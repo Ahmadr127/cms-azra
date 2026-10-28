@@ -38,7 +38,7 @@
                 </div>
                 <div class="px-4 pb-3">
                     <table class="w-full text-xs border">
-                        <thead class="bg-gray-100"><tr><th class="px-2 py-1 text-left">Field</th><th class="px-2 py-1 text-left">Value</th></tr></thead>
+                        <thead class="bg-sp-primary text-white"><tr><th class="px-2 py-1 text-left">Field</th><th class="px-2 py-1 text-left">Value</th></tr></thead>
                         <tbody>
                             @foreach($old as $k=>$v)
                             <tr class="border-t"><td class="px-2 py-1 font-mono font-semibold">{{ $k }}</td><td class="px-2 py-1 break-all">{{ is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : ($v ?? '-') }}</td></tr>
@@ -55,7 +55,7 @@
                 </div>
                 <div class="px-4 pb-3">
                     <table class="w-full text-xs border">
-                        <thead class="bg-gray-100"><tr><th class="px-2 py-1 text-left">Field</th><th class="px-2 py-1 text-left">Value</th></tr></thead>
+                        <thead class="bg-sp-primary text-white"><tr><th class="px-2 py-1 text-left">Field</th><th class="px-2 py-1 text-left">Value</th></tr></thead>
                         <tbody>
                             @foreach($new as $k=>$v)
                             <tr class="border-t"><td class="px-2 py-1 font-mono font-semibold">{{ $k }}</td><td class="px-2 py-1 break-all">{{ is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : ($v ?? '-') }}</td></tr>
@@ -74,7 +74,7 @@
             @else
                 <div class="overflow-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-100"><tr><th class="px-4 py-2 text-left">Field</th><th class="px-4 py-2 text-left">Sebelum</th><th class="px-4 py-2 text-left">Sesudah</th></tr></thead>
+                        <thead class="bg-sp-primary text-white"><tr><th class="px-4 py-2 text-left">Field</th><th class="px-4 py-2 text-left">Sebelum</th><th class="px-4 py-2 text-left">Sesudah</th></tr></thead>
                         <tbody class="divide-y">
                             @foreach($diff as $field=>$change)
                             <tr>
@@ -97,7 +97,7 @@
             </div>
             <div class="px-4 pb-4">
                 <table class="w-full text-xs border">
-                    <thead class="bg-gray-100"><tr><th class="px-2 py-1 text-left">Field</th><th class="px-2 py-1 text-left">Value</th></tr></thead>
+                    <thead class="bg-sp-primary text-white"><tr><th class="px-2 py-1 text-left">Field</th><th class="px-2 py-1 text-left">Value</th></tr></thead>
                     <tbody>
                         @foreach($old as $k=>$v)
                         <tr class="border-t"><td class="px-2 py-1 font-mono font-semibold">{{ $k }}</td><td class="px-2 py-1 break-all">{{ is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : ($v ?? '-') }}</td></tr>

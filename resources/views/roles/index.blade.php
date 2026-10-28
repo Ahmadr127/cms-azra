@@ -58,14 +58,14 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm min-w-max">
                         <thead>
-                            <tr class="bg-gray-100">
-                                <th class="sticky left-0 z-10 bg-gray-100 px-4 py-2.5 text-left font-semibold text-gray-700 min-w-[13rem]">
+                            <tr class="bg-sp-primary">
+                                <th class="sticky left-0 z-10 bg-sp-primary px-4 py-2.5 text-left font-semibold text-white min-w-[13rem]">
                                     Permission
                                 </th>
                                 @foreach($roles as $role)
-                                    <th class="px-3 py-2.5 text-center border-l border-gray-200 min-w-[9rem] align-top">
-                                        <div class="font-semibold text-gray-800">{{ $role->display_name }}</div>
-                                        <div class="text-xs font-normal text-gray-500">{{ $role->name }}</div>
+                                    <th class="px-3 py-2.5 text-center border-l border-white/20 min-w-[9rem] align-top">
+                                        <div class="font-semibold text-white">{{ $role->display_name }}</div>
+                                        <div class="text-xs font-normal text-white/70">{{ $role->name }}</div>
                                         <div class="mt-1 flex items-center justify-center gap-1">
                                             {{-- <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[.65rem] font-semibold rounded-full {{ $role->is_active ? 'bg-sp-primary/10 text-sp-primary' : 'bg-gray-200 text-gray-600' }}">
                                                 <i class="bi {{ $role->is_active ? 'bi-check-circle' : 'bi-x-circle' }}"></i>
@@ -77,7 +77,7 @@
                                         </div>
                                         <div class="mt-1 flex items-center justify-center gap-1">
                                             <button type="button" @click="openEdit({{ $role->id }})" title="Edit role"
-                                                class="inline-flex h-6 w-6 items-center justify-center rounded text-gray-400 hover:bg-white hover:text-sp-primary transition-colors">
+                                                class="inline-flex h-6 w-6 items-center justify-center rounded text-white/70 hover:bg-white/20 hover:text-white transition-colors">
                                                 <i class="bi bi-pencil text-xs"></i>
                                             </button>
                                             <form action="{{ route('roles.destroy', $role) }}" method="POST" class="inline"
@@ -85,7 +85,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" title="Hapus role"
-                                                    class="inline-flex h-6 w-6 items-center justify-center rounded text-gray-400 hover:bg-white hover:text-red-600 transition-colors">
+                                                    class="inline-flex h-6 w-6 items-center justify-center rounded text-white/70 hover:bg-white/20 hover:text-white transition-colors">
                                                     <i class="bi bi-trash text-xs"></i>
                                                 </button>
                                             </form>

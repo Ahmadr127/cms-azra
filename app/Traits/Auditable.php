@@ -20,7 +20,7 @@ trait Auditable
                 return;
             }
             // Hindari double log jika sudah di-handle di Service
-            if (app()->bound(ActivityLogService::class) && static::shouldAutoLog()) {
+            if (static::shouldAutoLog()) {
                 $changes = $model->getChanges();
                 // skip jika tidak ada perubahan signifikan selain updated_at
                 $dirty = array_diff_key($changes, ['updated_at' => true]);
@@ -44,7 +44,7 @@ trait Auditable
             if (property_exists($model, 'auditLogEnabled') && $model->auditLogEnabled === false) {
                 return;
             }
-            if (app()->bound(ActivityLogService::class) && static::shouldAutoLog()) {
+            if (static::shouldAutoLog()) {
                 app(ActivityLogService::class)->logDeleted($model);
             }
         });

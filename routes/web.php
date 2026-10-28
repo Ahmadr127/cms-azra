@@ -64,11 +64,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('roles', RoleController::class);
     });
 
-    // Doctor Management routes (tera API)
+    // Doctor Management routes (tera API + m_doctors lokal)
     Route::middleware('permission:manage_doctors')->group(function () {
         Route::get('doctors', [DoctorController::class, 'index'])->name('doctors.index');
-        Route::get('doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
-        Route::post('doctors', [DoctorController::class, 'store'])->name('doctors.store');
+        Route::post('doctors/prepare', [DoctorController::class, 'prepare'])->name('doctors.prepare');
         Route::get('doctors/{pid}/edit', [DoctorController::class, 'edit'])->name('doctors.edit');
         Route::put('doctors/{pid}', [DoctorController::class, 'update'])->name('doctors.update');
     });

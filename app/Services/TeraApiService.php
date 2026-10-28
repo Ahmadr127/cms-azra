@@ -14,28 +14,10 @@ class TeraApiService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.tera.backend_url'), '/');
+        $this->baseUrl = rtrim(config('services.tera.base_url'), '/');
         $this->username = (string) config('services.tera.username');
         $this->password = (string) config('services.tera.password');
         $this->rsid = (string) config('services.tera.rsid');
-    }
-
-    public function baseUrl(): string
-    {
-        return $this->baseUrl;
-    }
-
-    public function imageUrl(?string $path): string
-    {
-        if (! $path) {
-            return '';
-        }
-
-        if (preg_match('#^https?://#i', $path)) {
-            return $path;
-        }
-
-        return $this->baseUrl . '/' . ltrim($path, '/');
     }
 
     public function token(): string
@@ -45,20 +27,20 @@ class TeraApiService
             return $token;
         }
 
-        $response = Http::acceptJson()->post($this->baseUrl . '/auth/v1/login', [
+        $response = Http::acceptJson()->post($this->baseUrl . '/api/v1/login', [
             'username' => $this->username,
             'password' => $this->password,
         ]);
 
         if ($response->successful()) {
-            $token = $response->json('data.access_token') ?? $response->json('token');
+            $token = $response->json('token') ?? $response->json('data.access_token');
             if ($token) {
                 Session::put('tera_access_token', $token);
                 return $token;
             }
         }
 
-        throw new \RuntimeException('Gagal login ke backend: ' . $response->body());
+        throw new \RuntimeException('Gagal login ke tera: ' . $response->body());
     }
 
     public function resetToken(): void
@@ -75,7 +57,7 @@ class TeraApiService
     {
         $response = $callback($this->http());
 
-        if ($response->unauthorized() || $response->status() === 401) {
+        if ($response->unauthorized()) {
             $this->resetToken();
             $response = $callback($this->http());
         }
@@ -84,72 +66,49 @@ class TeraApiService
     }
 
     /**
-     * List dokter dari backend (sudah agregat semua halaman + foto dari DB backend).
+     * Ambil semua dokter dari tera (agregat paginasi, exclude POLI UMUM/LAKTASI).
      */
-    public function listDoctors(array $filters = []): array
+    public function listDoctors(): array
     {
-        $response = $this->request(fn ($http) => $http->get($this->baseUrl . '/api/tera/find_doctor', array_merge([
-            'rsid' => $this->rsid,
-        ], $filters)));
+        $page = 1;
+        $all = [];
+        $lastPage = 1;
 
-        if (! $response->successful()) {
-            return [];
-        }
+        do {
+            $response = $this->request(fn ($http) => $http->get($this->baseUrl . '/api/v1/doctors', [
+                'rsid' => $this->rsid,
+                'group' => true,
+                'page' => $page,
+            ]));
 
-        $data = $response->json('data') ?? $response->json() ?? [];
-        $data = is_array($data) ? $data : [];
-
-        return array_values(array_filter($data, 'is_array'));
-    }
-
-    public function findCmsDoctor(string $pid): ?array
-    {
-        $response = $this->request(fn ($http) => $http->get($this->baseUrl . '/api/tera/find_cms_doctor/' . urlencode($pid)));
-
-        if ($response->successful()) {
-            $data = $response->json('data');
-            return is_array($data) ? $data : null;
-        }
-
-        return null;
-    }
-
-    /**
-     * Ambil data dokter langsung dari tera (untuk melengkapi poli bila kosong).
-     */
-    public function teraDoctor(string $pid): ?array
-    {
-        $response = $this->request(fn ($http) => $http->get($this->baseUrl . '/api/tera/doctor/' . urlencode($pid), [
-            'rsid' => $this->rsid,
-        ]));
-
-        if ($response->successful()) {
-            $data = $response->json('data');
-            return is_array($data) ? $data : null;
-        }
-
-        return null;
-    }
-
-    public function updateDoctor(array $data): array
-    {
-        $response = $this->request(fn ($http) => $http->post($this->baseUrl . '/api/tera/update_doctor', $data));
-
-        return $response->json() ?? [];
-    }
-
-    public function storeUpdateDoctor(array $data, $file = null): array
-    {
-        $send = function ($http) use ($data, $file) {
-            if ($file) {
-                $http = $http->attach('url_image', fopen($file->getRealPath(), 'r'), $file->getClientOriginalName());
+            if (! $response->successful()) {
+                break;
             }
 
-            return $http->post($this->baseUrl . '/api/tera/store_update_doctor', $data);
-        };
+            $json = $response->json() ?? [];
+            $root = $json['data'] ?? $json;
+            $root = is_array($root) ? $root : [];
 
-        $response = $this->request($send);
+            $items = $root['data'] ?? $root;
+            $items = is_array($items) ? $items : [];
 
-        return $response->json() ?? [];
+            $lastPage = (int) ($root['last_page'] ?? 1);
+
+            $hidden = ['POLI UMUM', 'POLI LAKTASI'];
+            foreach ($items as $item) {
+                if (! is_array($item)) {
+                    continue;
+                }
+                $poli = $item['poli'] ?? null;
+                if ($poli !== null && in_array($poli, $hidden, true)) {
+                    continue;
+                }
+                $all[] = $item;
+            }
+
+            $page++;
+        } while ($page <= $lastPage && $page <= 100);
+
+        return $all;
     }
 }

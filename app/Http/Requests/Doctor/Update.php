@@ -14,11 +14,15 @@ class Update extends FormRequest
     public function rules(): array
     {
         return [
-            'pid' => 'required|string|max:255',
-            'name_real' => 'required|string|max:255',
-            'poli' => 'required|string|max:255',
-            'spesialis' => 'required|string|max:255',
-            'url_image' => 'nullable',
+            'name_real' => 'nullable|string|max:255',
+            'poli' => 'nullable|string|max:255',
+            'sex' => 'nullable|string|max:255',
+            'spesialis' => 'nullable|string|max:255',
+            'url_image' => 'nullable|image|max:5120',
+            'riwayat' => 'nullable|array',
+            'riwayat.*.description' => 'nullable|string|max:255',
+            'kursus' => 'nullable|array',
+            'kursus.*.description' => 'nullable|string|max:255',
         ];
     }
 }
