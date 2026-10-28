@@ -8,6 +8,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\OrganizationTypeController;
 use App\Http\Controllers\OrganizationUnitController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\DoctorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,7 +58,19 @@ Route::middleware('auth')->group(function () {
         Route::post('roles/{role}/permissions/{permission}/toggle', [RoleController::class, 'togglePermission'])
             ->name('roles.permissions.toggle');
 
+        Route::post('roles/permissions/sync', [RoleController::class, 'syncPermissions'])
+            ->name('roles.permissions.sync');
+
         Route::resource('roles', RoleController::class);
+    });
+
+    // Doctor Management routes (tera API)
+    Route::middleware('permission:manage_doctors')->group(function () {
+        Route::get('doctors', [DoctorController::class, 'index'])->name('doctors.index');
+        Route::get('doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
+        Route::post('doctors', [DoctorController::class, 'store'])->name('doctors.store');
+        Route::get('doctors/{pid}/edit', [DoctorController::class, 'edit'])->name('doctors.edit');
+        Route::put('doctors/{pid}', [DoctorController::class, 'update'])->name('doctors.update');
     });
 
     // Permission Management routes

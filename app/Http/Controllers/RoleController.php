@@ -72,4 +72,33 @@ class RoleController extends Controller
             'attached' => count($result['attached']) > 0,
         ]);
     }
+
+    /**
+     * Sync seluruh permission untuk semua role dari matriks (disimpan via tombol).
+     */
+    public function syncPermissions(\Illuminate\Http\Request $request)
+    {
+        $data = $request->validate([
+            'permissions' => 'required|array',
+            'permissions.*' => 'array',
+        ]);
+
+        foreach ($data['permissions'] as $roleId => $permissionIds) {
+            $role = Role::find($roleId);
+            if (! $role) {
+                continue;
+            }
+
+            $ids = array_values(array_filter(array_map(
+                static fn ($id) => is_numeric($id) ? (int) $id : null,
+                $permissionIds ?? []
+            )));
+
+            $role->permissions()->sync($ids);
+        }
+
+        return response()->json([
+            'message' => 'Permission berhasil disimpan.',
+        ]);
+    }
 }

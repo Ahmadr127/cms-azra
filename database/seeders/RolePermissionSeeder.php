@@ -17,6 +17,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'manage_users', 'display_name' => 'Kelola Users', 'description' => 'Mengelola pengguna'],
             ['name' => 'manage_organization_types', 'display_name' => 'Kelola Tipe Organisasi', 'description' => 'Mengelola tipe organisasi'],
             ['name' => 'manage_organization_units', 'display_name' => 'Kelola Unit Organisasi', 'description' => 'Mengelola unit organisasi'],
+            ['name' => 'manage_doctors', 'display_name' => 'Kelola Dokter', 'description' => 'Mengelola data dokter tera'],
         ];
 
         foreach ($permissions as $permission) {

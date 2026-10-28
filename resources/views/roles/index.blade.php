@@ -49,6 +49,10 @@
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-white rounded-md bg-sp-primary hover:bg-sp-primary-dark transition-colors whitespace-nowrap">
                         <i class="bi bi-plus-lg"></i> Tambah Role
                     </button>
+                    <button type="button" @click="saveAll()" :disabled="savingAll"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-white rounded-md bg-emerald-600 hover:bg-emerald-700 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-wait">
+                        <i class="bi bi-floppy"></i> <span x-text="savingAll ? 'Menyimpan...' : 'Simpan Hak Akses'"></span>
+                    </button>
                 </x-slot>
 
                 <div class="overflow-x-auto">
@@ -101,10 +105,9 @@
                                         <td class="px-3 py-2 text-center border-l border-gray-100">
                                             <button type="button"
                                                 @click="toggle({{ $role->id }}, {{ $permission->id }})"
-                                                :disabled="isSaving({{ $role->id }}, {{ $permission->id }})"
                                                 :aria-pressed="has({{ $role->id }}, {{ $permission->id }}) ? 'true' : 'false'"
                                                 title="{{ $role->display_name }} — {{ $permission->display_name }}"
-                                                class="inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-50 disabled:cursor-wait"
+                                                class="inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors"
                                                 :class="has({{ $role->id }}, {{ $permission->id }}) ? 'bg-sp-primary border-sp-primary text-white hover:bg-sp-primary-dark' : 'bg-white border-gray-300 text-gray-300 hover:border-sp-primary hover:text-sp-primary'">
                                                 <i class="bi bi-check-lg text-sm"></i>
                                             </button>
@@ -268,6 +271,7 @@ document.addEventListener('alpine:init', () => {
         roles: config.roles || {},
         baseUrl: config.baseUrl || '',
         saving: {},
+        savingAll: false,
         createOpen: config.createOpen || false,
         open: false,
         action: '',
@@ -284,41 +288,40 @@ document.addEventListener('alpine:init', () => {
             return !! this.saving[roleId + '-' + permissionId];
         },
 
-        async toggle(roleId, permissionId) {
-            const key = roleId + '-' + permissionId;
-            if (this.saving[key]) return;
-
-            this.saving[key] = true;
-
+        toggle(roleId, permissionId) {
             const before = (this.matrix[roleId] || []).map(String);
             const wasAttached = before.includes(String(permissionId));
             const after = wasAttached
                 ? before.filter(id => id !== String(permissionId))
                 : [...before, String(permissionId)];
 
-            // Optimistic update
             this.matrix[roleId] = after;
+        },
+
+        async saveAll() {
+            if (this.savingAll) return;
+            this.savingAll = true;
 
             try {
-                const response = await fetch(`${this.baseUrl}/${roleId}/permissions/${permissionId}/toggle`, {
+                const response = await fetch(`${this.baseUrl}/permissions/sync`, {
                     method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     },
+                    body: JSON.stringify({ permissions: this.matrix }),
                 });
 
                 if (! response.ok) {
                     throw new Error('Request gagal');
                 }
 
-                const data = await response.json();
-                this.matrix[roleId] = data.attached ? after : before;
+                window.alert('Hak akses berhasil disimpan.');
             } catch (error) {
-                this.matrix[roleId] = before;
-                window.alert('Gagal menyimpan permission. Silakan coba lagi.');
+                window.alert('Gagal menyimpan hak akses. Silakan coba lagi.');
             } finally {
-                delete this.saving[key];
+                this.savingAll = false;
             }
         },
 

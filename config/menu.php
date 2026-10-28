@@ -47,6 +47,18 @@ return [
         ],
     ],
     [
+        'title' => 'Dokter',
+        'menus' => [
+            [
+                'label' => 'Dokter',
+                'icon' => 'bi-person-badge-fill',
+                'route' => 'doctors.index',
+                'route_pattern' => 'doctors.*',
+                'permission' => 'manage_doctors',
+            ],
+        ],
+    ],
+    [
         'title' => 'Organisasi',
         'menus' => [
             [

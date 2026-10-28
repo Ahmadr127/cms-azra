@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'tera' => [
+        // Backend NestJS yang dipakai frontend (konsumsi API saja, tanpa DB lokal)
+        'backend_url' => env('TERA_BACKEND_URL', 'https://jonggrang.rsazra.co.id'),
+        'username' => env('TERA_USERNAME'),
+        'password' => env('TERA_PASSWORD'),
+        'rsid' => env('TERA_RSID', '195'),
+    ],
+
 ];
