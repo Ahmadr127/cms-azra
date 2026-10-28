@@ -24,9 +24,6 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     </noscript>
     
-    {{-- Sidebar CSS --}}
-    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
-    
     {{-- Sidebar JS - MUST load before Alpine.js to prevent flicker --}}
     <script src="{{ asset('js/sidebar.js') }}"></script>
 </head>
@@ -39,20 +36,19 @@
     <div x-data="sidebarComponent()" x-init="init()" class="h-full flex overflow-x-hidden">
         
         <!-- Sidebar: No x-cloak, use CSS to control visibility -->
-        <div class="sidebar fixed inset-y-0 left-0 z-50 bg-white flex flex-col h-screen lg:static lg:inset-0"
-             :class="{ 'mobile-open': mobileOpen }">
+        <div class="fixed inset-y-0 left-0 z-50 flex h-screen w-[215px] flex-col bg-white transition-all duration-300 lg:static lg:inset-0 max-lg:-translate-x-full [.sidebar-collapsed_&]:w-16"
+             :class="{ 'max-lg:translate-x-0': mobileOpen }">
             
             <!-- Logo/Brand -->
-            <div class="sidebar-header flex items-center justify-between px-6 pt-6 pb-3 border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 [.sidebar-collapsed_&]:justify-center [.sidebar-collapsed_&]:px-2">
                 <div class="flex items-center gap-2 overflow-hidden">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="sidebar-brand-logo h-[1.875rem] w-auto object-contain flex-shrink-0">
-                    {{-- Use CSS-driven visibility instead of x-show --}}
-                    <span class="sidebar-text sidebar-brand-text truncate">Sistem</span>
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-[1.875rem] w-auto shrink-0 object-contain [.sidebar-collapsed_&]:hidden">
+                    <span class="truncate text-[1.7rem] font-bold text-sp-navy transition-opacity duration-150 [.sidebar-collapsed_&]:pointer-events-none [.sidebar-collapsed_&]:invisible [.sidebar-collapsed_&]:m-0 [.sidebar-collapsed_&]:w-0 [.sidebar-collapsed_&]:max-w-0 [.sidebar-collapsed_&]:p-0 [.sidebar-collapsed_&]:opacity-0">Sistem</span>
                 </div>
             </div>
 
             <!-- Sidebar Navigation -->
-            <nav class="flex-1 overflow-y-auto sidebar-scroll px-6 pt-6">
+            <nav class="flex-1 overflow-y-auto px-4 pt-6 [.sidebar-collapsed_&]:px-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
                 @php
                     $menuGroups = config('menu');
                     $canAccess = function ($item) {
@@ -73,7 +69,7 @@
                 @foreach($menuGroups as $group)
                     @php $visible = array_values(array_filter($group['menus'], $canAccess)); @endphp
                     @if(count($visible) > 0)
-                        <p class="sidebar-title">{{ $group['title'] }}</p>
+                        <p class="mb-2 mt-4 px-2 text-xs font-medium text-gray-500 [.sidebar-collapsed_&]:hidden">{{ $group['title'] }}</p>
 
                         @foreach($visible as $item)
                             @if(isset($item['children']))
@@ -82,42 +78,44 @@
                                     $isOpen = request()->routeIs($childPatterns);
                                 @endphp
                                 <div class="mb-1" x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }">
-                                    <button @click="open = !open" 
-                                            class="sidebar-btn w-full justify-between">
+                                    <button @click="open = !open"
+                                            class="group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-sp-navy transition-all duration-150 hover:bg-sp-hover hover:text-sp-primary [.sidebar-collapsed_&]:justify-center [.sidebar-collapsed_&]:px-2">
                                         <div class="flex items-center gap-3">
-                                            <i class="bi {{ $item['icon'] }} sidebar-icon"></i>
-                                            <span class="sidebar-text">{{ $item['label'] }}</span>
+                                            <i class="bi {{ $item['icon'] }} flex h-6 w-6 shrink-0 items-center justify-center text-lg text-sp-icon transition-all duration-150 group-hover:scale-110 group-hover:text-sp-primary"></i>
+                                            <span class="truncate transition-opacity duration-150 [.sidebar-collapsed_&]:pointer-events-none [.sidebar-collapsed_&]:invisible [.sidebar-collapsed_&]:m-0 [.sidebar-collapsed_&]:w-0 [.sidebar-collapsed_&]:max-w-0 [.sidebar-collapsed_&]:p-0 [.sidebar-collapsed_&]:opacity-0">{{ $item['label'] }}</span>
                                         </div>
-                                        <i class="bi bi-chevron-down sidebar-text sidebar-chevron" :class="{ 'rotate-180': open }"></i>
+                                        <i class="bi bi-chevron-down text-xs text-sp-icon transition-transform duration-150 [.sidebar-collapsed_&]:hidden" :class="{ 'rotate-180': open, 'text-sp-primary': open }"></i>
                                     </button>
-                                    
-                                    <div x-show="open" 
+
+                                    <div x-show="open"
                                          x-transition:enter="transition ease-out duration-200"
                                          x-transition:enter-start="opacity-0 -translate-y-2"
                                          x-transition:enter-end="opacity-100 translate-y-0"
                                          x-transition:leave="transition ease-in duration-150"
                                          x-transition:leave-start="opacity-100 translate-y-0"
                                          x-transition:leave-end="opacity-0 -translate-y-2"
-                                         class="sidebar-submenu mt-1 space-y-0.5">
+                                         class="mt-1 space-y-0.5 [.sidebar-collapsed_&]:hidden">
                                         @foreach($item['children'] as $child)
                                             @if($canAccess($child))
-                                            <a href="{{ route($child['route']) }}" 
-                                               class="{{ request()->routeIs($child['route_pattern']) ? 'active' : '' }}"
+                                            @php $childActive = request()->routeIs($child['route_pattern']); @endphp
+                                            <a href="{{ route($child['route']) }}"
+                                               class="group flex items-center gap-3 rounded-lg px-7 py-1.5 text-xs font-semibold tracking-wide text-sp-navy transition-all duration-200 hover:bg-sp-submenu-hover hover:text-sp-primary {{ $childActive ? 'bg-sp-primary text-white' : '' }}"
                                                title="{{ $child['label'] }}">
-                                                <i class="bi {{ $child['icon'] }} sidebar-icon"></i>
-                                                <span class="sidebar-text">{{ $child['label'] }}</span>
+                                                <i class="bi {{ $child['icon'] }} flex h-6 w-6 shrink-0 items-center justify-center text-base transition-colors duration-200 {{ $childActive ? 'text-white' : 'text-sp-icon group-hover:text-sp-primary' }}"></i>
+                                                <span class="truncate">{{ $child['label'] }}</span>
                                             </a>
                                             @endif
                                         @endforeach
                                     </div>
                                 </div>
                             @else
+                                @php $itemActive = request()->routeIs($item['route_pattern'] ?? $item['route']); @endphp
                                 <div class="mb-1">
-                                    <a href="{{ route($item['route']) }}" 
-                                       class="sidebar-link {{ request()->routeIs($item['route_pattern'] ?? $item['route']) ? 'active' : '' }}" 
+                                    <a href="{{ route($item['route']) }}"
+                                       class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-sp-navy transition-all duration-150 hover:bg-sp-hover hover:text-sp-primary {{ $itemActive ? 'bg-sp-primary text-white shadow-sp-active' : '' }} [.sidebar-collapsed_&]:justify-center [.sidebar-collapsed_&]:px-2"
                                        title="{{ $item['label'] }}">
-                                        <i class="bi {{ $item['icon'] }} sidebar-icon"></i>
-                                        <span class="sidebar-text">{{ $item['label'] }}</span>
+                                        <i class="bi {{ $item['icon'] }} flex h-6 w-6 shrink-0 items-center justify-center text-lg transition-all duration-150 {{ $itemActive ? 'text-white' : 'text-sp-icon group-hover:scale-110 group-hover:text-sp-primary' }}"></i>
+                                        <span class="truncate transition-opacity duration-150 [.sidebar-collapsed_&]:pointer-events-none [.sidebar-collapsed_&]:invisible [.sidebar-collapsed_&]:m-0 [.sidebar-collapsed_&]:w-0 [.sidebar-collapsed_&]:max-w-0 [.sidebar-collapsed_&]:p-0 [.sidebar-collapsed_&]:opacity-0">{{ $item['label'] }}</span>
                                     </a>
                                 </div>
                             @endif
@@ -135,7 +133,7 @@
                     <div class="flex items-center space-x-4">
                         <!-- Toggle Button with separated logic -->
                         <button @click="toggle()" 
-                                class="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50" 
+                                class="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#007774] focus:ring-opacity-50" 
                                 :title="getToggleTitle()">
                             <!-- Mobile icon -->
                             <i class="fas text-lg lg:hidden" :class="mobileOpen ? 'fa-xmark' : 'fa-bars'"></i>
@@ -157,7 +155,7 @@
                     <div class="flex items-center space-x-3">
                         <!-- User Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                            <button @click="open = !open" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                            <button @click="open = !open" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#007774] focus:ring-opacity-50">
                                 <div class="w-8 h-8 bg-sp-primary rounded-full flex items-center justify-center">
                                     <i class="fas fa-user text-sm text-white"></i>
                                 </div>

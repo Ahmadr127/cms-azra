@@ -16,9 +16,14 @@ return new class extends Migration
             $table->string('username')->nullable()->after('name');
         });
 
-        // Update existing users with a default username based on their email
+        // Update existing users with a default username based on their id
+        $driver = DB::getDriverName();
+        $expression = $driver === 'sqlite'
+            ? DB::raw("'user_' || id")
+            : DB::raw("CONCAT('user_', id)");
+
         DB::table('users')->whereNull('username')->update([
-            'username' => DB::raw("CONCAT('user_', id)")
+            'username' => $expression
         ]);
 
         // Make username not null and unique
